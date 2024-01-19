@@ -1,0 +1,10 @@
+http:
+  proxy:
+    host:
+    port:
+deepl:
+  auth:
+    key: DeepL-Auth-Key da76c881-45b2-d0b8-afd2-78b3ad9ba1c0:fx
+  uri:
+    base: https://api-free.deepl.com
+    translate: /v2/translate
