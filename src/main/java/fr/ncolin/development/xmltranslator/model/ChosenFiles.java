@@ -4,6 +4,9 @@ import lombok.Getter;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChosenFiles {
 
@@ -11,6 +14,9 @@ public class ChosenFiles {
 
     @Getter
     String chosenFiles;
+
+    @Getter
+    private final List<File> files = new ArrayList<>();
 
     public ChosenFiles() {
         support = new PropertyChangeSupport(this);

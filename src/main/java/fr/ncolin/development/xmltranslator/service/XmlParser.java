@@ -2,10 +2,13 @@ package fr.ncolin.development.xmltranslator.service;
 
 import fr.ncolin.development.xmltranslator.XmlTranslatorApplication;
 import fr.ncolin.development.xmltranslator.config.DeeplProperties;
+import fr.ncolin.development.xmltranslator.model.ChosenFiles;
 import fr.ncolin.development.xmltranslator.model.TranslationRequest;
 import fr.ncolin.development.xmltranslator.model.TranslationResponse;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.miginfocom.swing.MigLayout;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -17,6 +20,7 @@ import org.xml.sax.SAXException;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,6 +35,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -43,6 +49,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +59,7 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-public class XmlParser {
+public class XmlParser extends JFrame {
 
 	// number of labels to translate in a single deepl call
 	public static final int BATCH_SIZE = 100;
@@ -62,14 +69,89 @@ public class XmlParser {
 	private final WebClient webClient;
 	private final DeeplProperties deeplProperties;
 
+	@Getter
+	private JTextField txtFileChosen;
+	private JButton btnBrowse;
+	private ChosenFiles chosenFiles;
+	private JButton btnStart;
+
 	@PostConstruct
 	public void postConstruct() {
-		this.findAllElementToTranslate();
+		this.chosenFiles = new ChosenFiles();
+		initUI();
+
+		this.setVisible(true);
 	}
 
-	public void findAllElementToTranslate() {
+	private void initUI() {
+		createLayout();
+
+		setTitle("Translation");
+		setSize(1200, 200);
+		setLocationRelativeTo(null);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+	}
+
+	private void createLayout() {
+
+		var pane = getContentPane();
+		MigLayout layout = new MigLayout("wrap 4, filly", "[][][fill, grow][]", "[top][bottom]");
+		pane.setLayout(layout);
+
+		pane.add(new JLabel("Files to translate"));
+
+		btnBrowse = new JButton("Browse");
+		pane.add(btnBrowse);
+
+		txtFileChosen = new JFormattedTextField("");
+		chosenFiles.addPropertyChangeListener(evt -> {
+			if ("chosenFiles".equals(evt.getPropertyName())) {
+				String newValue = (String) evt.getNewValue();
+				txtFileChosen.setText(newValue);
+			}
+		});
+		pane.add(txtFileChosen);
+
+		btnBrowse.addActionListener(actionEvent -> {
+			JFileChooser fileChooser = new JFileChooser();
+			fileChooser.setMultiSelectionEnabled(true);
+			int option = fileChooser.showOpenDialog(XmlParser.this);
+			if (option == JFileChooser.APPROVE_OPTION) {
+				File[] selectedFiles = fileChooser.getSelectedFiles();
+				StringBuilder fileNames = new StringBuilder();
+				for (File file : selectedFiles) {
+					System.out.printf("file found: %s%n", file);
+					this.chosenFiles.getFiles().add(file);
+					if (fileNames.length() > 0) {
+						fileNames.append("\n");
+					}
+					fileNames.append(file.getName());
+				}
+				this.chosenFiles.setChosenFiles(fileNames.toString());
+				pane.validate(); // don't anybody i did that
+			}
+		});
+
+		this.btnStart = new JButton("Start");
+		pane.add(btnStart, "right");
+
+		btnStart.addActionListener(actionEvent -> this.translate());
+
+		var quitButton = new JButton("Quit");
+		quitButton.setBackground(Color.red);
+		quitButton.setForeground(Color.white);
+		quitButton.addActionListener((ActionEvent event) -> {
+			System.exit(0);
+		});
+		pane.add(quitButton);
+	}
+
+	public void translate() {
 		// 1. get all files
-		List<Path> files = this.getFiles();
+		List<Path> files = Arrays.stream(this.chosenFiles.getChosenFiles()
+				.split(","))
+				.map(Paths::get)
+				.toList();
 
 		// 2. For each french file, find all the codes needing a translation. Ex:
 		// All_Resources.fr.resx: [Action_CycleCountSchedule_ActivateAutocreate, Action_CycleCountSchedule_CancelIteration, ...]
@@ -363,24 +445,5 @@ public class XmlParser {
 		NamedNodeMap attributes = node.getAttributes();
 		Node name = attributes.getNamedItem("name");
 		return name.getNodeValue();
-	}
-
-
-	/**
-	 * Quick and dirty AF. Gets the files found in target/
-	 * 
-	 * @return list of files
-	 */
-	private List<Path> getFiles() {
-		try {
-			File file = new File(XmlTranslatorApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-			String basePath = file.getParent();
-			Path dir = Paths.get(basePath);
-			try (Stream<Path> fileStream = Files.list(dir)) {
-				return fileStream.toList();
-			}
-		} catch (URISyntaxException | IOException e) {
-			return new ArrayList<>();
-		}
 	}
 }
