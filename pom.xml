@@ -28,12 +28,17 @@
 			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.deepl.api/deepl-java -->
 		<dependency>
 			<groupId>com.deepl.api</groupId>
 			<artifactId>deepl-java</artifactId>
 			<version>1.4.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout-swing</artifactId>
+			<version>11.3</version>
+		</dependency>
+
 
 
 		<dependency>
@@ -53,6 +58,45 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>com.akathist.maven.plugins.launch4j</groupId>
+				<artifactId>launch4j-maven-plugin</artifactId>
+				<version>2.5.1</version>
+				<executions>
+					<execution>
+						<id>create-exe</id>
+						<phase>package</phase>
+						<goals>
+							<goal>launch4j</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dontWrapJar>false</dontWrapJar>
+					<headerType>console</headerType>
+					<jar>C:\Dev\Projects\xml-translator\target\xml-translator-0.0.1-SNAPSHOT.jar</jar>
+					<outfile>C:\Dev\Delivery\Translator\Translator.exe</outfile>
+					<errTitle>Translator</errTitle>
+					<cmdLine/>
+					<chdir>.</chdir>
+					<priority>normal</priority>
+					<downloadUrl>http://java.com/download</downloadUrl>
+					<supportUrl/>
+					<stayAlive>true</stayAlive>
+					<restartOnCrash>false</restartOnCrash>
+					<manifest/>
+					<icon>C:\Dev\Projects\xml-translator\icon.ico</icon>
+					<jre>
+						<path>jre</path>
+						<requiresJdk>false</requiresJdk>
+						<requires64Bit>false</requires64Bit>
+						<minVersion/>
+						<maxVersion/>
+						<initialHeapSize>1024</initialHeapSize>
+						<maxHeapSize>4096</maxHeapSize>
+					</jre>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
