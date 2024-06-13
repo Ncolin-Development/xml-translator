@@ -28,12 +28,17 @@
 			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.deepl.api/deepl-java -->
 		<dependency>
 			<groupId>com.deepl.api</groupId>
 			<artifactId>deepl-java</artifactId>
 			<version>1.4.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout-swing</artifactId>
+			<version>11.3</version>
+		</dependency>
+
 
 
 		<dependency>
