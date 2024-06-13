@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class ChosenFiles {
     String chosenFiles;
 
     @Getter
-    private final List<File> files = new ArrayList<>();
+    private final List<Path> files = new ArrayList<>();
 
     public ChosenFiles() {
         support = new PropertyChangeSupport(this);
